@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { config } from '@/config/env';
 
 interface AuthContextType {
   user: User | null;
@@ -33,6 +34,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Get the correct redirect URL based on environment
+  const getRedirectUrl = () => {
+    // Check if we're in production (Netlify)
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return `${window.location.origin}/auth`;
+    }
+    // Use localhost for development
+    return `${config.site.url}/auth`;
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -59,7 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth`
+          emailRedirectTo: getRedirectUrl()
         }
       });
       return { error };
@@ -82,7 +93,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth`
+          redirectTo: getRedirectUrl()
         }
       });
       return { error };
