@@ -36,11 +36,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   // Get the correct redirect URL based on environment
   const getRedirectUrl = () => {
-    // Check if we're in production (Netlify)
-    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-      return `${window.location.origin}/auth`;
-    }
-    // Use localhost for development
+    // Use the config which now auto-detects environment
     return `${config.site.url}/auth`;
   };
 
